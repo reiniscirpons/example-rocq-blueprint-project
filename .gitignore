@@ -1,0 +1,8 @@
+*Makefile.rocq*
+CoqMakefile.conf
+*.aux
+*.vo
+*.vok
+*.vos
+*.glob
+.coq-native/
