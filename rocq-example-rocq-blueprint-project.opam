@@ -1,0 +1,24 @@
+opam-version: "2.0"
+maintainer: "reinis.cirpons@inria.fr"
+version: "dev"
+
+homepage: "https://github.com/reiniscirpons/example-rocq-blueprint-project"
+dev-repo: "git+https://github.com/reiniscirpons/example-rocq-blueprint-project.git"
+bug-reports: "https://github.com/reiniscirpons/example-rocq-blueprint-project/issues"
+license: "CeCILL-B"
+
+synopsis: "An example Rocq project showcasing blueprint functionality"
+description: """
+This project implements some basic proofs relating to even numbers. It is intended to
+showcase the `rocqblueprint` tool functionality and serve for testing for sai project."""
+
+build: [make "-j%{jobs}%"]
+install: [make "install"]
+depends: [
+  "rocq-core"
+  "rocq-mathcomp-boot"
+]
+
+authors: [
+  "Reinis Cirpons"
+]

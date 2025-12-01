@@ -1,4 +1,5 @@
 *Makefile.rocq*
+*Makefile.coq*
 CoqMakefile.conf
 *.aux
 *.vo
@@ -6,3 +7,4 @@ CoqMakefile.conf
 *.vos
 *.glob
 .coq-native/
+_opam
