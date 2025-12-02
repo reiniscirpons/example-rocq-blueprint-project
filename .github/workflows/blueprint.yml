@@ -1,0 +1,89 @@
+name: Compile blueprint
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to the default branch
+  workflow_dispatch:        # Allow manual triggering of the workflow from the GitHub Actions interface
+
+# Cancel previous runs if a new commit is pushed to the same PR or branch
+concurrency:
+  group: ${{ github.ref }}  # Group runs by the ref (branch or PR)
+  cancel-in-progress: true  # Cancel any ongoing runs in the same group
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read  # Read access to repository contents
+  pages: write    # Write access to GitHub Pages
+  id-token: write # Write access to ID tokens
+
+jobs:
+  build_project:
+    runs-on: ubuntu-latest
+    name: Build project
+    env:
+      homepage: "home_page"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for all branches and tags
+
+      - name: Check for `home_page` folder # this is meant to detect a Jekyll-based website
+        id: check_home_page
+        run: |
+          if [ -d home_page ]; then
+            echo "The 'home_page' folder exists in the repository."
+            echo "HOME_PAGE_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "The 'home_page' folder does not exist in the repository."
+            echo "HOME_PAGE_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Build rocq project
+        uses: coq-community/docker-coq-action@v1
+        with:
+          opam_file: 'rocq-example-rocq-blueprint-project.opam'
+          coq_version: '9.1.0'
+          ocaml_version: 'default'
+          before_script: |
+            startGroup "Workaround permission issue"
+              sudo chown -R 1000:1000 .
+            endGroup
+          after_script: |
+            startGroup "Build docs"
+              rocq makefile -f _CoqProject -o Makefile.blueprint.doc
+              make -f Makefile.blueprint.doc html
+              cp -r html ${{ env.homepage }}/docs
+            endGroup
+
+      - name: Revert permissions
+        # to avoid a warning at cleanup time
+        if: ${{ always() }}
+        run: sudo chown -R 1001:116 .
+
+      - name: Bundle dependencies
+        uses: ruby/setup-ruby@v1
+        with:
+          working-directory: ${{ env.homepage }}
+          ruby-version: "3.4"
+          bundler-cache: true  # Enable caching for bundler
+
+      - name: Build website using Jekyll
+        if: github.event_name == 'push' && env.HOME_PAGE_EXISTS == 'true'
+        working-directory: ${{ env.homepage }}
+        env:
+          JEKYLL_GITHUB_TOKEN: ${{ github.token }}
+        run: JEKYLL_ENV=production bundle exec jekyll build # Note this will also copy the blueprint and API doc into ${{ env.homepage }}/_site
+        shell: bash
+
+      - name: "Upload website (API documentation, blueprint and any home page)"
+        if: github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.HOME_PAGE_EXISTS == 'true' && format('{0}/_site', env.homepage) || format('{0}/', env.homepage) }}
+
+      - name: Deploy to GitHub Pages
+        if: github.event_name == 'push'
+        id: deployment
+        uses: actions/deploy-pages@v4
+

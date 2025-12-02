@@ -19,13 +19,12 @@
 # in the templates via {{ site.myvariable }}.
 
 title: An example Rocq project
-#email: your-email@example.com
+email: reinis.cirpons@inria.fr
 description: by Reinis Cirpons
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://reiniscirpons.github.io/example-rocq-blueprint-project" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username:
-github_username: 
-repository: /
+github_username: reiniscirpons
+repository: "reiniscirpons/example-rocq-blueprint-project"
 
 # Build settings
 remote_theme: pages-themes/cayman@v0.2.0 
