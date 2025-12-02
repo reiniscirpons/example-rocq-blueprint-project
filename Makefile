@@ -8,3 +8,6 @@ all clean install: Makefile.coq
 
 Makefile.coq: _CoqProject
 	$(COQBIN)rocq makefile -f $< -o $@
+
+%: Makefile.coq
+	$(MAKE) -f $< $@

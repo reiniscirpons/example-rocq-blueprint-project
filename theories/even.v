@@ -53,4 +53,22 @@ Proof.
     by inversion H.
   by apply /even_SSn/H0/evenI_SSn/H2.
 Qed.
+
+Theorem main_theorem {n: MyNat}:
+  (even n /\ evenI n /\ is_even n) \/
+  (~even n /\ ~evenI n /\ ~~ is_even n).
+Proof.
+  move: (sumbool_of_bool (is_even n)) => H; case H => {}H; rewrite H //=.
+    have: (evenI n) => [|H1].
+      by apply (evenP H).
+    left; apply conj.
+      by apply evenE; exact H1.
+    by apply conj => [|//=]; exact H1.
+  have: ~ evenI n => [|H1].
+    by apply negbT in H; move: H; apply contraNnot; exact: (introT evenP).
+  right; apply conj.
+    by apply (iffRLn evenE); exact: H1.
+  by apply conj => [|//=]; exact H1.
+Qed.
+
 End MyEven.

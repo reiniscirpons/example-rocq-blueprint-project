@@ -8,3 +8,8 @@ CoqMakefile.conf
 *.glob
 .coq-native/
 _opam
+blueprint/web/
+blueprint/print/
+blueprint/rocq_decls
+blueprint/src/web.paux
+html/
