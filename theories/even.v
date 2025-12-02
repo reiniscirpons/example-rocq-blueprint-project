@@ -1,4 +1,5 @@
 Require Import ssreflect ssrbool ssrfun.
+From mathcomp Require Import ssralg.
 From MyNaturals Require Import naturals functions.
 From MyEven Require Import induction.
 
@@ -72,3 +73,6 @@ Proof.
 Qed.
 
 End MyEven.
+
+(* To check imports dont break in CI *)
+Definition foo := natr0E.

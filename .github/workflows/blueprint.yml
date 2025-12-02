@@ -23,6 +23,8 @@ jobs:
     name: Build project
     env:
       homepage: "home_page"
+      rocq_version: "9.1.0"
+      opam_file: "rocq-example-rocq-blueprint-project.opam"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -42,24 +44,60 @@ jobs:
       - name: Build rocq project
         uses: coq-community/docker-coq-action@v1
         with:
-          opam_file: 'rocq-example-rocq-blueprint-project.opam'
-          coq_version: '9.1.0'
+          opam_file: ${{ env.opam_file }}
+          coq_version: ${{ env.rocq_version }}
           ocaml_version: 'default'
           before_script: |
             startGroup "Workaround permission issue"
               sudo chown -R 1000:1000 .
             endGroup
+          script: |
+            startGroup "Build"
+              opam install -y -v -j 2 --with-doc $PACKAGE
+              opam list
+            endGroup
           after_script: |
             startGroup "Build docs"
-              rocq makefile -f _CoqProject -o Makefile.blueprint.doc
+            if [ ! -d html ]
+            then
+              if ! command -v rocq >/dev/null 2>&1
+              then
+                coq_makefile -f _CoqProject -o Makefile.blueprint.doc
+              else
+                rocq makefile -f _CoqProject -o Makefile.blueprint.doc
+              fi
               make -f Makefile.blueprint.doc html
-              cp -r html ${{ env.homepage }}/docs
+            fi
+            # Currently, we expect the built docs to exist in the ./html/ folder,
+            # if this is not the case then the following should be adjusted
+            cp -r html ${{ env.homepage }}/docs
             endGroup
 
       - name: Revert permissions
         # to avoid a warning at cleanup time
         if: ${{ always() }}
         run: sudo chown -R 1001:116 .
+
+      - name: Build blueprint and copy to `home_page/blueprint`
+        uses: xu-cheng/texlive-action@v2
+        with:
+          docker_image: ghcr.io/xu-cheng/texlive-full:20250101
+          run: |
+            # Install necessary dependencies and build the blueprint
+            apk update
+            apk add --update make py3-pip git pkgconfig graphviz graphviz-dev gcc musl-dev
+            git config --global --add safe.directory $GITHUB_WORKSPACE
+            git config --global --add safe.directory `pwd`
+            python3 -m venv env
+            source env/bin/activate
+            pip install --upgrade pip requests wheel
+            pip install pygraphviz --config-settings="--global-option=build_ext" --config-settings="--global-option=-L/usr/lib/graphviz/" --config-settings="--global-option=-R/usr/lib/graphviz/"
+            pip install "git+https://github.com/reiniscirpons/rocqblueprint"
+            rocqblueprint pdf
+            mkdir -p home_page
+            cp blueprint/print/print.pdf home_page/blueprint.pdf
+            rocqblueprint web
+            cp -r blueprint/web home_page/blueprint
 
       - name: Bundle dependencies
         uses: ruby/setup-ruby@v1

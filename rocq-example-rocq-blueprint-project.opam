@@ -12,11 +12,14 @@ description: """
 This project implements some basic proofs relating to even numbers. It is intended to
 showcase the `rocqblueprint` tool functionality and serve for testing for sai project."""
 
-build: [make "-j%{jobs}%"]
+build: [
+  [make "-j%{jobs}%"]
+]
 install: [make "install"]
 depends: [
   "rocq-core"
   "rocq-mathcomp-boot"
+  "rocq-mathcomp-algebra"
 ]
 
 authors: [
