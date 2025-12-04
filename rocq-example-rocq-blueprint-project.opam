@@ -10,11 +10,9 @@ license: "CeCILL-B"
 synopsis: "An example Rocq project showcasing blueprint functionality"
 description: """
 This project implements some basic proofs relating to even numbers. It is intended to
-showcase the `rocqblueprint` tool functionality and serve for testing for sai project."""
+showcase the `rocqblueprint` tool functionality and serve for testing for said project."""
 
-build: [
-  [make "-j%{jobs}%"]
-]
+build: [make "-j%{jobs}%"]
 install: [make "install"]
 depends: [
   "rocq-core"

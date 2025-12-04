@@ -25,10 +25,12 @@ jobs:
       homepage: "home_page"
       rocq_version: "9.1.0"
       opam_file: "rocq-example-rocq-blueprint-project.opam"
+      custom_doc_command: "make coqdoc"
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Fetch all history for all branches and tags
+          submodules: 'true' # Get submodules, neccesary for e.g. coqdocjs
 
       - name: Check for `home_page` folder # this is meant to detect a Jekyll-based website
         id: check_home_page
@@ -57,8 +59,11 @@ jobs:
               opam list
             endGroup
           after_script: |
+            # The following command group builds the documentation for the project.
+            # Please modify it if your project requires a different build procedure
+            # for producing the docs.
             startGroup "Build docs"
-            if [ ! -d html ]
+            if [ -z ${{ env.custom_doc_command }} ]
             then
               if ! command -v rocq >/dev/null 2>&1
               then
@@ -67,6 +72,8 @@ jobs:
                 rocq makefile -f _CoqProject -o Makefile.blueprint.doc
               fi
               make -f Makefile.blueprint.doc html
+            else
+              ${{ env.custom_doc_command }}
             fi
             # Currently, we expect the built docs to exist in the ./html/ folder,
             # if this is not the case then the following should be adjusted
