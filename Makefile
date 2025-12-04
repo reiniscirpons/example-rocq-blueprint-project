@@ -10,14 +10,6 @@ export COQDOCFLAGS
 COQMAKEFILE ?= Makefile.coq
 COQDOCJS_LN ?= false
 
-coqdoc: $(COQMAKEFILE)
-	$(MAKE) -f $^ html
-ifeq ($(COQDOCJS_LN),true)
-	ln -sf ../$(EXTRA_DIR)/resources html
-else
-	cp -R $(EXTRA_DIR)/resources html
-endif
-
 .PHONY: all clean install coqdoc
 
 all clean install: Makefile.coq
@@ -32,3 +24,11 @@ Makefile.coq: _CoqProject
 
 %: Makefile.coq
 	$(MAKE) -f $< $@
+
+coqdoc: $(COQMAKEFILE)
+	$(MAKE) -f $^ html
+ifeq ($(COQDOCJS_LN),true)
+	ln -sf ../$(EXTRA_DIR)/resources html
+else
+	cp -R $(EXTRA_DIR)/resources html
+endif
